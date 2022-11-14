@@ -1,3 +1,4 @@
+#include "PlayfairCipher.hpp"
 #include "CaesarCipher.hpp"
 #include "CipherMode.hpp"
 #include "CipherType.hpp"
@@ -99,9 +100,8 @@ int main(int argc, char* argv[])
             break;
         }
         case CipherType::Playfair: {
-            std::cerr << "[warning] Playfair cipher not yet implemented"
-                      << std::endl;
-            outputText = inputText;
+            PlayfairCipher cipher{settings.cipherKey};
+            outputText = cipher.applyCipher(inputText, settings.cipherMode);
             break;
         }
     }
