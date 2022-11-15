@@ -53,10 +53,16 @@ void PlayfairCipher::setKey(std::string key) {
     }
 }
 
-std::string PlayfairCipher::applyCipher(const std::string& inputText, const CipherMode /*cipherMode*/) const {
-    // ChangeJ→I
+std::string PlayfairCipher::applyCipher(const std::string& inputText, const CipherMode cipherMode) const {
+    // TODO: enable the decrypt mechanism in this as well 
+    if (cipherMode == CipherMode::Decrypt) {
+        std::cout << "Decrypting has not yet been implemented!" << std::endl;
+        return inputText;
+    }
+
     std::string output{""};
     output.resize(inputText.size()); // our output should be the same size as our input
+    // ChangeJ→I
     std::transform(inputText.begin(), inputText.end(), output.begin(), [] (char c) { return c == 'J' ? 'I' : c; });
 
     // If repeated chars in a digraph add an X or Q if XX
@@ -76,29 +82,25 @@ std::string PlayfairCipher::applyCipher(const std::string& inputText, const Ciph
         // Find the coords in the grid for each digraph
         std::pair<int, int> newCoords1 {charToCoord_.at(output[i])};
         std::pair<int, int> newCoords2 {charToCoord_.at(output[i+1])};
-
         // Apply the rules to these coords to get 'new' coords
         if (newCoords1.first == newCoords2.first) {
             // The digraph form a column (same x values)
-            int lowestRow {std::min(newCoords1.second, newCoords2.second)};
-            if (lowestRow == newCoords1.second) {
-                newCoords2 = {newCoords2.first, newCoords1.second};
-            } else {
-                newCoords1 = {newCoords1.first, };
-            }
+            newCoords1 = {newCoords1.first, (newCoords1.second+1)%5};
+            newCoords2 = {newCoords2.first, (newCoords2.second+1)%5}; 
         } else if (newCoords2.second == newCoords1.second) {
             // The digraph form a row (same y values)
+            newCoords1 = {(newCoords1.first+1)%5, newCoords1.second};
+            newCoords2 = {(newCoords2.first+1)%5, newCoords2.second};  
         } else {
             // Must form a rectangle on the 5x5 grid
+            newCoords1 = {newCoords2.first, newCoords1.second};
+            newCoords2 = {newCoords1.first, newCoords2.second};
         }
-        
         // Find the letter associated with the new coords 
         auto newChar1 {coordToChar_.find(newCoords1)}; // Find the new "encrypted" character
-        auto newChar2 {coordToChar_.find(newCoords2)}
+        auto newChar2 {coordToChar_.find(newCoords2)};
         output[i] = newChar1->second; // update the output text with the new character
-        output[i] = newChar2->second;
+        output[i+1] = newChar2->second;
     }
-
-    // return the text
     return output;
 }
